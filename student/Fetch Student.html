@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Students</title>
+    <link rel="stylesheet" href="./Style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Student Scores</h1>
+        <table id="studentsTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Score 1</th>
+                    <th>Score 2</th>
+                    <th>Score 3</th>
+                    <th>Average</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated here -->
+            </tbody>
+        </table>
+        <h2 id="studentCount">Total Students: 0</h2>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableBody = document.getElementById('studentsTable').querySelector('tbody');
+            const studentCountElement = document.getElementById('studentCount');
+            const averages = [];
+
+            // Closure to keep track of student count
+            const studentCounter = (function() {
+                let count = 0;
+                return {
+                    increment: function() {
+                        count++;
+                        studentCountElement.textContent = `Total Students: ${count}`;
+                    },
+                    getCount: function() {
+                        return count;
+                    }
+                };
+            })();
+
+            // Function to calculate average
+            function calculateAverage(scores) {
+                let sum = scores.reduce((acc, score) => acc + score, 0);
+                return (sum / scores.length).toFixed(2);
+            }
+
+            // Loop through local storage and display each student's scores
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const studentData = JSON.parse(localStorage.getItem(key));
+                const average = parseFloat(calculateAverage(studentData.scores));
+                averages.push(average);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${studentData.name}</td>
+                    <td>${studentData.scores[0]}</td>
+                    <td>${studentData.scores[1]}</td>
+                    <td>${studentData.scores[2]}</td>
+                    <td>${average}</td>
+                `;
+                tableBody.appendChild(row);
+                
+                // Increment student count for each student added
+                studentCounter.increment();
+            }
+
+            // Determine the highest and lowest averages
+            const highestAverage = Math.max(...averages);
+            const lowestAverage = Math.min(...averages);
+
+            // Update the rows with color coding
+            const rows = tableBody.querySelectorAll('tr');
+            rows.forEach((row) => {
+                const average = parseFloat(row.cells[4].textContent);
+                if (average === highestAverage) {
+                    row.classList.add('highest');
+                } else if (average === lowestAverage) {
+                    row.classList.add('lowest');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
